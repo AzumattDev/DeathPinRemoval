@@ -1,0 +1,9 @@
+{
+  "name": "DeathPinRemoval",
+  "version_number": "1.0.0",
+  "website_url": "https://discord.gg/pdHgy6Bsng",
+  "description": "A simple mod requested by gdragon. This mod will remove the death pin from the map when the tombstone is fully looted. Optionally, prevent the creation of your death pins.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2105"
+  ]
+}
