@@ -38,6 +38,8 @@
 
 # Author Information
 
+### Code Repo can be found [here](https://github.com/AzumattDev/DeathPinRemoval)
+
 ### Azumatt
 
 `DISCORD:` Azumatt#2625
