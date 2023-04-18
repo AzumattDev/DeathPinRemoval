@@ -1,3 +1,4 @@
-| `Version` | `Update Notes`    |
-|-----------|-------------------|
-| 1.0.0     | - Initial Release |
+| `Version` | `Update Notes`                                                                                                                                                                         |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.1     | - Provide compatibility with mods, vanilla, etc that turn off the minimap/map. Pins in vanilla do not effectively remove themselves unless the map is open. How dumb is that? oh well. |
+| 1.0.0     | - Initial Release                                                                                                                                                                      |
