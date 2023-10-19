@@ -14,7 +14,7 @@ namespace DeathPinRemoval
     public class DeathPinRemovalPlugin : BaseUnityPlugin
     {
         internal const string ModName = "DeathPinRemoval";
-        internal const string ModVersion = "1.0.2";
+        internal const string ModVersion = "1.0.3";
         internal const string Author = "Azumatt";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -40,8 +40,9 @@ namespace DeathPinRemoval
                 "If on, the configuration is locked and can be changed by server admins only.");
             _ = ConfigSync.AddLockingConfigEntry(_serverConfigLocked);
 
-            totalPinRemoval = config("1 - Pin Control", "TotalPinRemoval", Toggle.Off, "If on, no death pin will be created when the player dies.");
-            removeOnEmpty = config("1 - Pin Control", "RemovePinOnTombstoneInteract", Toggle.On, "If on, the death pin for the tombstone will be removed when the tombstone is fully looted.");
+            TotalPinRemoval = config("1 - Pin Control", "TotalPinRemoval", Toggle.Off, "If on, no death pin will be created when the player dies.");
+            RemoveOnEmpty = config("1 - Pin Control", "RemovePinOnTombstoneInteract", Toggle.On, "If on, the death pin for the tombstone will be removed when the tombstone is fully looted.");
+            RemoveIfEmpty = config("1 - Pin Control", "RemovePinIfInventoryWasEmpty", Toggle.On, "If on, the death pin will be removed if the player's inventory was empty when they died.");
 
 
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -84,8 +85,9 @@ namespace DeathPinRemoval
         #region ConfigOptions
 
         private static ConfigEntry<Toggle> _serverConfigLocked = null!;
-        public static ConfigEntry<Toggle> totalPinRemoval = null!;
-        public static ConfigEntry<Toggle> removeOnEmpty = null!;
+        public static ConfigEntry<Toggle> TotalPinRemoval = null!;
+        public static ConfigEntry<Toggle> RemoveOnEmpty = null!;
+        public static ConfigEntry<Toggle> RemoveIfEmpty = null!;
 
         private ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description,
             bool synchronizedSetting = true)

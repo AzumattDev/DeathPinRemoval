@@ -12,21 +12,47 @@ static class TombstoneGiveBoostPatch
     {
         DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("Starting TombstoneGiveBoostPatch");
 
-        if (DeathPinRemovalPlugin.removeOnEmpty.Value != DeathPinRemovalPlugin.Toggle.On)
+        if (DeathPinRemovalPlugin.RemoveOnEmpty.Value != DeathPinRemovalPlugin.Toggle.On)
         {
-            DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug(
-                "Not removing tombstone pin because removeOnEmpty is not enabled.");
+            DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("Not removing tombstone pin because removeOnEmpty is not enabled.");
             return;
         }
 
         DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("Looking for the closest death pin.");
+        RemoveClosestPin(__instance);
 
+        DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("Finished TombstoneGiveBoostPatch");
+    }
+
+    public static Minimap.PinData GetClosestPin(Vector3 pos, float radius)
+    {
+        // Basically the same as Minimap.GetClosestPin but with no check for active in hierarchy on the pin. Just if it exists and has the m_save.
+        // This is because the tombstone pin is not active in hierarchy when the game has nomap mode. Effectively, making it "not exist" in the vanilla method.
+        Minimap.PinData closestPin = null;
+        float num1 = 999999f;
+        foreach (Minimap.PinData pin in Minimap.instance.m_pins)
+        {
+            if (pin.m_save && pin.m_uiElement)
+            {
+                float num2 = Utils.DistanceXZ(pos, pin.m_pos);
+                if (num2 < (double)radius && (num2 < (double)num1 || closestPin == null))
+                {
+                    closestPin = pin;
+                    num1 = num2;
+                }
+            }
+        }
+
+        return closestPin;
+    }
+
+    public static void RemoveClosestPin(Component __instance)
+    {
         Minimap.PinData closestPin = GetClosestPin(__instance.transform.position, 10);
 
-        if (closestPin == null || closestPin.m_type != Minimap.PinType.Death)
+        if (closestPin is not { m_type: Minimap.PinType.Death })
         {
-            DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug(
-                "No death pin found within 10 units, looking for the closest pin within 5 units.");
+            DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("No death pin found within 10 units, looking for the closest pin within 5 units.");
 
             closestPin = GetClosestPin(__instance.transform.position, 5);
         }
@@ -54,38 +80,13 @@ static class TombstoneGiveBoostPatch
             }
             catch (Exception e)
             {
-                DeathPinRemovalPlugin.DeathPinRemovalLogger.LogError(
-                    $"Caught exception when removing tombstone pin: {e}");
+                DeathPinRemovalPlugin.DeathPinRemovalLogger.LogError($"Caught exception when removing death pin: {e}");
             }
         }
         else
         {
             DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("No death pin found to remove.");
         }
-
-        DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("Finished TombstoneGiveBoostPatch");
-    }
-
-    public static Minimap.PinData GetClosestPin(Vector3 pos, float radius)
-    {
-        // Basically the same as Minimap.GetClosestPin but with no check for active in hierarchy on the pin. Just if it exists and has the m_save.
-        // This is because the tombstone pin is not active in hierarchy when the game has nomap mode. Effectively, making it "not exist" in the vanilla method.
-        Minimap.PinData closestPin = null;
-        float num1 = 999999f;
-        foreach (Minimap.PinData pin in Minimap.instance.m_pins)
-        {
-            if (pin.m_save && pin.m_uiElement)
-            {
-                float num2 = Utils.DistanceXZ(pos, pin.m_pos);
-                if (num2 < (double)radius && (num2 < (double)num1 || closestPin == null))
-                {
-                    closestPin = pin;
-                    num1 = num2;
-                }
-            }
-        }
-
-        return closestPin;
     }
 }
 
@@ -99,7 +100,20 @@ static class MinimapAddPinPatch
         bool isChecked,
         long ownerID = 0)
     {
-        if (DeathPinRemovalPlugin.totalPinRemoval.Value != DeathPinRemovalPlugin.Toggle.On) return true;
+        if (DeathPinRemovalPlugin.TotalPinRemoval.Value != DeathPinRemovalPlugin.Toggle.On) return true;
         return type != Minimap.PinType.Death;
+    }
+}
+
+[HarmonyPatch(typeof(Player), nameof(Player.OnDeath))]
+static class PlayerOnDeathPatch
+{
+    static void Postfix(Player __instance)
+    {
+        if (__instance.m_inventory == null) return;
+        if (__instance.m_inventory.NrOfItems() == 0 && DeathPinRemovalPlugin.RemoveIfEmpty.Value == DeathPinRemovalPlugin.Toggle.On)
+        {
+            TombstoneGiveBoostPatch.RemoveClosestPin(__instance);
+        }
     }
 }
