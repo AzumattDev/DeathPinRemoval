@@ -46,20 +46,22 @@ static class TombstoneGiveBoostPatch
         return closestPin;
     }
 
-    public static void RemoveClosestPin(Component __instance)
+    public static void RemoveClosestPin(Component __instance, bool inventoryWasEmpty = false)
     {
         Minimap.PinData closestPin = GetClosestPin(__instance.transform.position, 10);
 
         if (closestPin is not { m_type: Minimap.PinType.Death })
         {
-            DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("No death pin found within 10 units, looking for the closest pin within 5 units.");
+            if (!inventoryWasEmpty)
+                DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("No death pin found within 10 units, looking for the closest pin within 5 units.");
 
             closestPin = GetClosestPin(__instance.transform.position, 5);
         }
 
         if (closestPin != null)
         {
-            DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug($"Removing death pin with name: {closestPin.m_name}");
+            if (!inventoryWasEmpty)
+                DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug($"Removing death pin with name: {closestPin.m_name}");
 
             try
             {
@@ -85,7 +87,8 @@ static class TombstoneGiveBoostPatch
         }
         else
         {
-            DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("No death pin found to remove.");
+            if (!inventoryWasEmpty)
+                DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("No death pin found to remove.");
         }
     }
 }
@@ -100,8 +103,9 @@ static class MinimapAddPinPatch
         bool isChecked,
         long ownerID = 0)
     {
-        if (DeathPinRemovalPlugin.TotalPinRemoval.Value != DeathPinRemovalPlugin.Toggle.On) return true;
-        return type != Minimap.PinType.Death;
+        if (DeathPinRemovalPlugin.TotalPinRemoval.Value == DeathPinRemovalPlugin.Toggle.On) return type != Minimap.PinType.Death;
+        if (PlayerCreateTombStonePatch.InventoryWasEmpty && DeathPinRemovalPlugin.RemoveIfEmpty.Value == DeathPinRemovalPlugin.Toggle.On) return type != Minimap.PinType.Death;
+        return true;
     }
 }
 
@@ -110,10 +114,24 @@ static class PlayerOnDeathPatch
 {
     static void Postfix(Player __instance)
     {
-        if (__instance.m_inventory == null) return;
-        if (__instance.m_inventory.NrOfItems() == 0 && DeathPinRemovalPlugin.RemoveIfEmpty.Value == DeathPinRemovalPlugin.Toggle.On)
+        if (PlayerCreateTombStonePatch.InventoryWasEmpty && DeathPinRemovalPlugin.RemoveIfEmpty.Value == DeathPinRemovalPlugin.Toggle.On)
         {
-            TombstoneGiveBoostPatch.RemoveClosestPin(__instance);
+            DeathPinRemovalPlugin.DeathPinRemovalLogger.LogDebug("Removing death pin because inventory was empty when player died.");
+            TombstoneGiveBoostPatch.RemoveClosestPin(__instance, PlayerCreateTombStonePatch.InventoryWasEmpty);
+            PlayerCreateTombStonePatch.InventoryWasEmpty = false;
         }
+    }
+}
+
+[HarmonyPatch(typeof(Player), nameof(Player.CreateTombStone))]
+static class PlayerCreateTombStonePatch
+{
+    public static bool InventoryWasEmpty;
+
+    static void Prefix(Player __instance)
+    {
+        if (__instance.m_inventory == null) return;
+        if (__instance != Player.m_localPlayer) return;
+        InventoryWasEmpty = __instance.m_inventory.NrOfItems() == 0;
     }
 }

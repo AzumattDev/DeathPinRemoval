@@ -14,19 +14,15 @@ namespace DeathPinRemoval
     public class DeathPinRemovalPlugin : BaseUnityPlugin
     {
         internal const string ModName = "DeathPinRemoval";
-        internal const string ModVersion = "1.0.3";
+        internal const string ModVersion = "1.0.4";
         internal const string Author = "Azumatt";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
         private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
         internal static string ConnectionError = "";
         private readonly Harmony _harmony = new(ModGUID);
-
-        public static readonly ManualLogSource DeathPinRemovalLogger =
-            BepInEx.Logging.Logger.CreateLogSource(ModName);
-
-        private static readonly ConfigSync ConfigSync = new(ModGUID)
-            { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
+        public static readonly ManualLogSource DeathPinRemovalLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
+        private static readonly ConfigSync ConfigSync = new(ModGUID) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
 
         public enum Toggle
         {
@@ -36,8 +32,7 @@ namespace DeathPinRemoval
 
         public void Awake()
         {
-            _serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On,
-                "If on, the configuration is locked and can be changed by server admins only.");
+            _serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On, "If on, the configuration is locked and can be changed by server admins only.");
             _ = ConfigSync.AddLockingConfigEntry(_serverConfigLocked);
 
             TotalPinRemoval = config("1 - Pin Control", "TotalPinRemoval", Toggle.Off, "If on, no death pin will be created when the player dies.");
