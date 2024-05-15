@@ -1,5 +1,6 @@
 | `Version` | `Update Notes`                                                                                                                                                                         |
 |-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.5     | - Version bump for Ashlands                                                                                                                                                            |
 | 1.0.4     | - Fix the remove pin when inventory is empty config option.                                                                                                                            |
 | 1.0.3     | - Add a configuration option (On by default) that will remove the pin if the player died with an empty inventory.                                                                      |
 | 1.0.2     | - Update for Valheim 0.217.22                                                                                                                                                          |
