@@ -81,6 +81,12 @@
         <Reference Include="ServerSync">
             <HintPath>Libs\ServerSync.dll</HintPath>
         </Reference>
+        <Reference Include="Splatform">
+          <HintPath>$(CorlibPath)\Splatform.dll</HintPath>
+        </Reference>
+        <Reference Include="Splatform.Steam">
+          <HintPath>$(CorlibPath)\Splatform.Steam.dll</HintPath>
+        </Reference>
         <Reference Include="System"/>
         <Reference Include="System.Core"/>
         <Reference Include="System.Data"/>
